@@ -123,6 +123,7 @@ class Global extends React.Component {
         </div>
         <div className="right-column">
           <Routes>
+          <Route path="/" element={<Page1 globals={globals} />} />
             <Route path="/page1" element={<Page1 globals={globals} />} />
             <Route path="/page2" element={<Page2 />} />
             <Route path="/page3" element={<Page3 />} />
