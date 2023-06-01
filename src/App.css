@@ -1,9 +1,52 @@
-* {
-  text-align: center;
+.bg {
+  background: radial-gradient(circle, #3272f2, #1f59e0);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
-InputField {
+.container {
+  display: flex;
+}
+
+.left-column {
+  flex: 0 0 20%;
+}
+
+.right-column {
+  flex: 1;
   
+}
+
+.list {
+  display: flex;
+  align-items: center;
+}
+
+.inputbtn {
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn {
+  border: 1px solid black;
+  border-radius: 4px;
+  height: 40px;
+  min-height: 40px;
+  width: 40px;
+  min-width: 40px;
+  background-color: transparent;
+  font-size: 25px;
+  margin-right: 15px;
+}
+
+.fieldStyle {
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  margin-top: 96px;
 }
 
 ul {
@@ -14,27 +57,14 @@ ul {
   text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-.rm-button {
-  border-radius: 10px;
+.default-btn {
+  border-radius: 30px;
   border-width: 0;
   margin: 15px;
   background-color:darkblue;
   color: white;
-  width: 50px;
+  width: 40px;
   height: 40px;
 }
+
+

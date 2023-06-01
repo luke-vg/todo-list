@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTrash, faPlus, faPen, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 import './App.css'
-
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 const initialGlobalState = {
-  count: 0,
   todos: []
 };
 
@@ -17,7 +16,9 @@ class Global extends React.Component {
     
 	// Set the initial (global) State
     this.state = {
+      showIcon: false,
       globals: initialGlobalState || {},
+      
     };
     
   }
@@ -31,6 +32,7 @@ class Global extends React.Component {
   setGlobalState = (data = {}) => {
     const { globals } = this.state;
     
+
     // Loop over the data items by key, only updating those which have changed
     Object.keys(data).forEach((key) => {
       globals[key] = data[key];
@@ -42,6 +44,7 @@ class Global extends React.Component {
 
   addTodo = (todo) => {
     this.setState(prevState => ({
+
       globals: {
         ...prevState.globals,
         todos: [...prevState.globals.todos, todo]
@@ -49,24 +52,29 @@ class Global extends React.Component {
     }));
   }
 
-toggleComplete = (index) => {
-  this.setState(prevState => {
-    const newTodos = prevState.globals.todos.map((todo,i) => {
-      if (i===index) {
-        return {...todo, completed: !todo.completed};
-      } else {
-        return todo;
-      }
-    });
-    return {
+  toggleComplete = (index) => {
+    this.setState((prevState) => ({
       globals: {
         ...prevState.globals,
-        todos: newTodos
+        todos: prevState.globals.todos.map((todo, i) =>
+          i === index
+            ? { ...todo, completed: !todo.completed, showIcon: !todo.showIcon }
+            : todo
+        ),
+      },
+    }));
+  };
+  
+  editTodo = (index, newText) => {
+    this.setState(prevState => ({
+      globals: {
+        ...prevState.globals,
+        todos: prevState.globals.todos.map((todo, i) =>
+          i === index ? { ...todo, text: newText } : todo
+        )
       }
-    }
-  }, () => console.log(this.state));
-}
-
+    }))
+  }
   removeTodo = (index) => {
     this.setState(prevState => ({
       globals: {
@@ -82,25 +90,62 @@ toggleComplete = (index) => {
     
     return (
       // Pass the current value of GlobalState, based on this components' State, down
-      <GlobalState.Provider value={globals}>
-        <InputField addTodo={this.addTodo}></InputField>
-        <TodoList todos={globals.todos} toggleComplete={this.toggleComplete} removeTodo={this.removeTodo} />
-         <h1>Todo app</h1>
-        <ul>
-
-        </ul> 
-        <Root />
-        
+<GlobalState.Provider
+      value={{
+        ...globals,
+        showIcon: this.state.showIcon,
+    addTodo: this.addTodo,
+    toggleComplete: this.toggleComplete,
+    removeTodo: this.removeTodo,
+    editTodo: this.editTodo,
+      }}
+    >   
+    <Router>
+      <div className="bg">
+        <div className="left-column">
+          <div className="page-selector">
+            <ul>
+              <li><a href="/page1">Page 1</a></li>
+              <li><a href="/page2">Page 2</a></li>
+              <li><a href="/page3">Page 3</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="right-column">
+          <Routes>
+            <Route path="/page1" element={<Page1 globals={globals} />} />
+            <Route path="/page2" element={<Page2 />} />
+            <Route path="/page3" element={<Page3 />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
       </GlobalState.Provider>
     );
   }
 }
+function Page1(props) {
+  const { globals } = props;
+  return (
+    <React.Fragment>
+      <InputField addTodo={this.addTodo}></InputField>
+      <TodoList
+        showIcon={this.state.showIcon}
+        todos={globals.todos}
+        toggleComplete={this.toggleComplete}
+        removeTodo={this.removeTodo}
+      />
+    </React.Fragment>
+  );
+}
 
-// Create a shorthand Hook for using the GlobalState
-const useGlobalState = () => React.useContext(GlobalState);
+function Page2() {
+  return <h1>Page 2 Content</h1>;
+}
 
-// Create an example component which both renders and modifies the GlobalState
-
+function Page3() {
+  return <h1>Page 3 Content</h1>;
+}
 function UseInputValue(initialValue) {
    const [value, setValue] = useState(initialValue);
 
@@ -110,48 +155,89 @@ function UseInputValue(initialValue) {
   };
 }
 
-function TodoList({todos, toggleComplete, removeTodo}) {
+function TodoList() {
+  const [editIndex, setEditIndex] = useState(null);
+const [editText, setEditText] = useState('');
+  const { todos, toggleComplete, removeTodo, editTodo } = useContext(GlobalState);
   return (
     <ul>
-      {todos.map((todo,index) => (
-        <li key={index} style={{textDecoration: todo.completed ? 'line-through' : 'none'}}>
-          <FontAwesomeIcon icon={faCheck} onClick={() => toggleComplete(index)}></FontAwesomeIcon>{todo.text}
-          <button className="rm-button" onClick={() => removeTodo(index)}>
-            <FontAwesomeIcon icon={faTrash}></FontAwesomeIcon>
-            </button>
-          </li>
-      ))}
-    </ul>
+  {todos.map((todo, index) => (
+    <li
+      key={index}
+      style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
+    >
+      
+      <div className="container">
+        <div className="inputbtn">
+        <button className="icon-btn" onClick={() => toggleComplete(index)}>
+  {todo.showIcon && <FontAwesomeIcon icon={faCheck} />}
+</button>
+{editIndex === index ? (
+  <>
+    <input
+      type="text"
+      value={editText}
+      onChange={(e) => setEditText(e.target.value)}
+    />
+    <button
+      className="default-btn"
+      onClick={() => {
+        editTodo(editIndex, editText);
+        setEditIndex(null);
+        setEditText('');
+      }}
+    >
+      <FontAwesomeIcon icon={faFloppyDisk} />
+    </button>
+  </>
+) : (
+  todo.text
+)}
+      
+        {todo.text}
+        </div>
+        <button className="default-btn" onClick={() => removeTodo(index)}>
+          <FontAwesomeIcon icon={faTrash} />
+        </button>
+        <button
+  className="default-btn"
+  onClick={() => {
+    setEditIndex(index);
+    setEditText(todo.text);
+  }}
+>
+        <FontAwesomeIcon icon={faPen} />
+      </button>
+      </div>
+    </li>
+  ))}
+</ul>
   )
 }
 
-function InputField({ addTodo }) {
+function InputField() {
+  const { addTodo } = useContext(GlobalState);
   const name = UseInputValue('');
   const handleSubmit = (event) => {
     event.preventDefault();
-    const newTodo = { text: name.value};
+    const newTodo = { text: name.value, showIcon: false };
     addTodo(newTodo);
     name.onChange({ target: { value: ''}});
   }
   return (
     <form onSubmit={handleSubmit}>
-    <input type="text" {...name} />
-    <button type="submit">Add</button>
+    <input className="fieldStyle" type="text" {...name} />
+    <button className="default-btn" type="submit">
+    <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
+  </button>
     </form>
   )
 }
 
 function SomeComponent() {
-  const { count } = useGlobalState();
+  //const { count } = useGlobalState();
 
-  // Create a function which mutates GlobalState
-  function incrementCount() {
-    GlobalState.set({
-      count: count + 1,
-    });
-  }
-
-  return <div onClick={incrementCount}>{count}</div>;
+  
 }
 
 export default function poc() {
